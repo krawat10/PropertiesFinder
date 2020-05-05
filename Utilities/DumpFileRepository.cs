@@ -62,7 +62,7 @@ namespace Utilities
         {
             //Poniżej określone są ścieżki w jakim pliku ma być zapisany dump.
             var directoryPath = GetDirectoryPath(dumpDetails.WebPage);
-            var filePath = $"{dumpDetails.DateTime.ToString("yyyyMMddHHmmssfff")}.dat";
+            var filePath = $"{dumpDetails.DateTime:yyyyMMddHHmmssfff}.dat";
             return $"{directoryPath}\\{filePath}";
         }
 

@@ -22,6 +22,7 @@
         /// </summary>
         public int? YearOfConstruction { get; set; }
 
-
+        public int NumberOfFloors { get; set; }
+        public string BuldingType { get; set; }
     }
 }
