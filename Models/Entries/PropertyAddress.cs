@@ -2,6 +2,7 @@
 {
     public class PropertyAddress
     {
+
         /// <summary>
         /// Nazwa miasta. Nie wymagane jeżeli posesja stoi we wsi
         /// </summary>

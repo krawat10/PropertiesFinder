@@ -1,11 +1,13 @@
-﻿namespace Models
+﻿using Models.Entries;
+
+namespace Models
 {
     public class Entry
     {
         public OfferDetails OfferDetails { get; set; }
 
         public PropertyPrice PropertyPrice { get; set; }
-    
+
         public PropertyDetails PropertyDetails { get; set; }
 
         public PropertyAddress PropertyAddress { get; set; }

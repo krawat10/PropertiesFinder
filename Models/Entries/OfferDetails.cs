@@ -3,7 +3,8 @@
 namespace Models
 {
     public class OfferDetails
-    { 
+    {
+
         /// <summary>
         /// Adres do konkretnej oferty
         /// </summary>

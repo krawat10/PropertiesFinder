@@ -8,6 +8,11 @@ namespace Utilities.Extensions
     {
         public static string RemoveWhitespaces(this string value)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
             return Regex.Replace(value, @"\s+", "");
         }
 
@@ -20,6 +25,20 @@ namespace Utilities.Extensions
         {
             return Regex.Replace(value, @"[^\d]", "");
         }
+
+        public static decimal? FindDecimalOrNull(this string value, string separator = ",")
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+
+            var decimalRegex = new Regex(@$"[0-9{separator}]+");
+
+            if (decimalRegex.IsMatch(value))
+                return decimal.Parse(decimalRegex.Match(value).Value,
+                    new NumberFormatInfo { NumberDecimalSeparator = separator });
+
+            return null;
+        }
+
 
         public static decimal FindDecimal(this string value, string separator = ",",
             decimal defaultValue = Decimal.Zero)

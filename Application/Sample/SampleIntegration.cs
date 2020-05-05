@@ -51,7 +51,7 @@ namespace Application.Sample
                             OfferKind = OfferKind.SALE,
                             SellerContact = new SellerContact
                             {
-                                Email = "okazje@mieszkania.pl"
+                                // Email = "okazje@mieszkania.pl"
                             },
                             IsStillValid = true
                         },
@@ -66,7 +66,7 @@ namespace Application.Sample
                             OfferKind = OfferKind.RENTAL,
                             SellerContact = new SellerContact
                             {
-                                Email = "przeceny@mieszkania.pl"
+                                // Email = "przeceny@mieszkania.pl"
                             },
                             IsStillValid = true
                         },

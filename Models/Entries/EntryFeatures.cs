@@ -1,7 +1,12 @@
-﻿namespace Models
+﻿using System.Collections.Generic;
+using Models.Comparers;
+
+namespace Models.Entries
 {
     public class PropertyFeatures
     {
+
+        public static IEqualityComparer<PropertyFeatures> PropertyFeaturesComparer { get; } = new PropertyFeaturesEqualityComparer();
 
         /// <summary>
         /// Wielkość ogródka w metrach. "0" w przypadku gdy oferta nie zawiera ogródka

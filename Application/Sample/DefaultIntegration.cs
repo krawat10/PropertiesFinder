@@ -6,15 +6,16 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Interfaces;
 using Models;
+using Models.Entries;
 using Utilities.Extensions;
 
 namespace Application.Sample
 {
     public class DefaultIntegration : IWebSiteIntegration
     {
-        private static Regex _urlRegex = new Regex(@"\'(?<url>https://[a-zA-Z0-9~_.,/-]+)\'");
-        private static Regex _priceRegex = new Regex(@"Cena: (?<price>[0-9 ]+|inf\. u dewelopera)");
-        private List<string> _offerTypeTexts = new List<string>();
+        private static readonly Regex UrlRegex = new Regex(@"(?<url>https://[a-zA-Z0-9~_.,/-]+)");
+        private static readonly Regex PriceRegex = new Regex(@"Cena: (?<price>[0-9 ]+|inf\. u dewelopera)");
+        private static readonly List<string> OfferTypes = new List<string> {"pokoje", "mieszkania", "domy"};
 
         public DefaultIntegration(IDumpsRepository dumpsRepository,
             IEqualityComparer<Entry> equalityComparer)
@@ -23,7 +24,7 @@ namespace Application.Sample
             EntriesComparer = equalityComparer;
             WebPage = new WebPage
             {
-                Url = "https://www.oferty.net/mieszkania/szukaj",
+                Url = "https://www.oferty.net",
                 Name = "oferty.net",
                 WebPageFeatures = new WebPageFeatures
                 {
@@ -40,38 +41,49 @@ namespace Application.Sample
             var web = new HtmlWeb();
             var entries = new List<Entry>();
 
-            foreach (var city in Enum.GetNames(typeof(PolishCity)).Take(5))
+
+            foreach (var offerType in OfferTypes)
             {
-                var uri = new Uri(WebPage.Url)
-                    .AddParameter("ps[type]", "1")
-                    .AddParameter("ps[location][type]", "1")
-                    .AddParameter("ps[location][text]", city)
-                    .AddParameter("ps[transaction]", "1");
-
-                var doc = web.Load(uri);
-
-                var offerCollection = doc.DocumentNode.SelectNodes("//tr[contains(@class, 'property')]");
-
-                foreach (var offer in offerCollection)
+                foreach (var city in Enum.GetNames(typeof(PolishCity)))
                 {
-                    var offerLink = offer.GetAttributeValue("onclick", String.Empty);
+                    var uri = new Uri($"{WebPage.Url}/{offerType}/szukaj")
+                        .AddParameter("page", "1") // For the sake of testing, only one page from each city
+                        .AddParameter("ps[type]", "1")
+                        .AddParameter("ps[foreign_search]", "0")
+                        .AddParameter("ps[location][type]", "1")
+                        .AddParameter("ps[location][text]", city)
+                        .AddParameter("ps[transaction]", "1");
 
-                    if (_urlRegex.IsMatch(offerLink))
+                    var doc = web.Load(uri);
+
+                    var offerCollection = doc.DocumentNode.SelectNodes("//tr[contains(@class, 'property')]");
+
+                    if (offerCollection != null)
                     {
-                        var url = _urlRegex.Match(offerLink).Groups["url"].Value;
-                        var htmlNode = new HtmlWeb().Load(url).DocumentNode;
-
-                        if (IsValidOffer(htmlNode))
+                        foreach (var offer in offerCollection)
                         {
-                            entries.Add(new Entry
+                            var offerLink = offer.GetAttributeValue("onclick", String.Empty);
+
+                            if (UrlRegex.IsMatch(offerLink))
                             {
-                                PropertyPrice = CreatePropertyPrice(htmlNode),
-                                PropertyAddress = PropertyAddress(htmlNode, city),
-                                OfferDetails = CreateOfferDetail(htmlNode, url),
-                                PropertyDetails = CreatePropertyDetails(htmlNode),
-                                PropertyFeatures = CreatePropertyFeatures(htmlNode),
-                                RawDescription = CreateDescription(htmlNode)
-                            });
+                                var url = UrlRegex.Match(offerLink).Groups["url"].Value;
+                                var htmlNode = new HtmlWeb().Load(url).DocumentNode;
+
+                                if (IsValidOffer(htmlNode))
+                                {
+                                    entries.Add(item: new Entry
+                                    {
+                                        PropertyPrice = CreatePropertyPrice(htmlNode),
+                                        PropertyAddress = PropertyAddress(htmlNode, city),
+                                        OfferDetails = CreateOfferDetail(htmlNode),
+                                        PropertyDetails = CreatePropertyDetails(htmlNode),
+                                        PropertyFeatures = CreatePropertyFeatures(htmlNode),
+                                        RawDescription = CreateDescription(htmlNode)
+                                    });
+
+                                    Console.WriteLine($"Added: {url}");
+                                }
+                            }
                         }
                     }
                 }
@@ -83,7 +95,6 @@ namespace Application.Sample
 
         private PropertyFeatures CreatePropertyFeatures(HtmlNode htmlNode)
         {
-            
             var propertyFeatures = new PropertyFeatures
             {
                 HasElevator = GetCustomOfferDetailValue(htmlNode, "Winda:").StringToBool("tak", "nie"),
@@ -92,46 +103,9 @@ namespace Application.Sample
                 BalconyArea = GetCustomOfferDetailValue(htmlNode, "Powierzchnia tarasu:").FindIntegerNullable(),
                 GardenArea = GetCustomOfferDetailValue(htmlNode, "Powierzchnia ogródka").FindIntegerNullable(),
                 ParkingPlaces = GetCustomOfferDetailValue(htmlNode, "Miejsca parkingowe:").FindIntegerNullable(),
-                IsPrimaryMarket = GetCustomOfferDetailValue(htmlNode, "Rynek pierwotny:").StringToNullableBool("Tak", "Nie")
+                IsPrimaryMarket = GetCustomOfferDetailValue(htmlNode, "Rynek pierwotny:")
+                    .StringToNullableBool("Tak", "Nie")
             };
-
-            // case "Materiał budowlany:": break;
-            // case "Stan nieruchomości:": break;
-            // case "Wysokość pomieszczeń:": break;
-            // case "Typ kuchni:": break;
-            // case "Liczba łazienek:": break;
-            // case "Czy łazienka z WC:": break;
-            // case "Liczba sypialni:": break;
-            // case "Czy zamknięty obiekt:": break;
-            // case "Powierzchnia mieszkalna:": break;
-            // case "Forma własności:": break;
-            // case "Dostępne od:":
-            // break;
-            // case "Na biuro:": break;
-            // case "Ogłoszeniodawca posiada tą ofertę na wyłączność": break;
-            // case "Liczba miejsc parkingowych:": break;
-            // case "Ogrzewanie:": break;
-            // case "Miejsca parkingowe:": break;
-            // case "Domofon:": break;
-            // case "Powierzchnia balkonu:": break;
-            // case "Telefon:": break;
-            // case "Liczba lini telefonicznych:": break;
-            // case "Balkon:": break;
-            // case "Gaz:": break;
-            // case "Rynek pierwotny:": break;
-            // case "Woda:": break;
-            // case "Taras:": break;
-            // case "Powierzchnia tarasu:": break;
-            // case "Stan budynku:": break;
-            // case "Meble:": break;
-            // case "Liczba wind w budynku:": break;
-            // case "Czy kuchnia jest umeblowana:": break;
-            // case "Klimatyzacja:": break;
-            // case "Deweloper:": break;
-            // case "Inwestycja:": break;
-            // case "Lokalizacja:": break;
-            // case "Powierzchnia loggia:": break;
-            // case "Powierzchnia ogródka:": break;
             return propertyFeatures;
         }
 
@@ -160,9 +134,16 @@ namespace Application.Sample
 
         private bool IsValidOffer(HtmlNode htmlNode)
         {
-            var priceNode = htmlNode.SelectNodes("//div[@class='header']/h3");
+            var hasPrice = htmlNode.SelectSingleNode("//div[@class='header']/h3") != null;
 
-            return priceNode.Any();
+            var isForeignOffer = htmlNode
+                                     .SelectSingleNode(@"//span[@class='propertyName' or @class='propertyCompanyName']")
+                                     .InnerText?.Equals("Współpraca zagraniczna") ??
+                                 false;
+
+            var hasPhoneNumber = htmlNode.SelectSingleNode("//span[@class='visible-contact']") != null;
+
+            return hasPrice && !isForeignOffer && hasPhoneNumber;
         }
 
         private PropertyDetails CreatePropertyDetails(HtmlNode htmlNode)
@@ -178,8 +159,10 @@ namespace Application.Sample
 
             var floorNumberText = GetCustomOfferDetailValue(htmlNode, "Piętro:");
 
-            if (floorNumberText.Contains("parter")) propertyDetails.FloorNumber = 0;
-            else propertyDetails.FloorNumber = floorNumberText.FindInteger();
+            if (!string.IsNullOrWhiteSpace(floorNumberText))
+            {
+                propertyDetails.FloorNumber = floorNumberText.Contains("parter") ? 0 : floorNumberText.FindInteger();
+            }
 
             return propertyDetails;
         }
@@ -203,7 +186,7 @@ namespace Application.Sample
             var propertyPrice = new PropertyPrice();
 
             var priceNode = htmlNode.SelectSingleNode("//div[@class='header']/h3").InnerText;
-            var priceText = _priceRegex.Match(priceNode).Groups["price"].Value;
+            var priceText = PriceRegex.Match(priceNode).Groups["price"].Value;
 
             if (priceText.Contains("inf. u dewelopera"))
             {
@@ -214,7 +197,7 @@ namespace Application.Sample
                 propertyPrice.TotalGrossPrice = priceText.RemoveWhitespaces().FindDecimal();
             }
 
-            propertyPrice.PricePerMeter = GetCustomOfferDetailValue(htmlNode, "Cena za m&sup2;:").FindDecimal();
+            propertyPrice.PricePerMeter = GetCustomOfferDetailValue(htmlNode, "Cena za m&sup2;:").FindDecimalOrNull();
             // propertyPrice.ResidentalRent = GetCustomOfferDetailValue(htmlNode,); // todo
 
             return propertyPrice;
@@ -226,28 +209,26 @@ namespace Application.Sample
                 .SelectSingleNode("//div[@id='description']").InnerText;
         }
 
-        private OfferDetails CreateOfferDetail(HtmlNode htmlNode, string url)
+        private OfferDetails CreateOfferDetail(HtmlNode htmlNode)
         {
             var sellerContactName = htmlNode
                 .SelectSingleNode(@"//span[@class='propertyName' or @class='propertyCompanyName']")
                 .InnerText;
 
+            var offerType = htmlNode
+                .SelectSingleNode(@"//div[@class='header']/span")
+                .InnerText;
+
+            OfferKind offerKind;
+
+            if (offerType.Contains("wynajęcia")) offerKind = OfferKind.RENTAL;
+            else offerKind = OfferKind.SALE;
+
+
             var sellerContact = htmlNode
                 .SelectSingleNode("//span[@class='visible-contact']")
                 .InnerText
                 .RemoveWhitespaces();
-
-            var offerTypeText = htmlNode
-                .SelectSingleNode("//div[@class='header']/span/a")
-                .InnerText;
-
-            _offerTypeTexts.Add(offerTypeText);
-
-            var creationDateTime = htmlNode
-                .SelectNodes("//div[@class='baseParam']/div")
-                .FirstOrDefault(node => node.Element("b")?.InnerText == "Data dodania:")
-                .InnerText
-                .FindDate();
 
             var lastUpdateDateTime = htmlNode
                 .SelectNodes("//div[@class='baseParam']/div")
@@ -255,13 +236,24 @@ namespace Application.Sample
                 .InnerText
                 .FindDate();
 
+            var creationDateTime = htmlNode
+                                       .SelectNodes("//div[@class='baseParam']/div")
+                                       .FirstOrDefault(node => node.Element("b")?.InnerText == "Data dodania:")
+                                       ?.InnerText.FindDate() ?? lastUpdateDateTime;
+
+
+            var urlShort = htmlNode
+                .SelectNodes("//div[@class='baseParam']/div")
+                .FirstOrDefault(node => node.Element("b")?.InnerText == "Link do oferty:")
+                ?.InnerText;
 
             return new OfferDetails
             {
                 CreationDateTime = creationDateTime,
                 LastUpdateDateTime = lastUpdateDateTime,
                 IsStillValid = true,
-                Url = url,
+                Url = UrlRegex.Match(urlShort).Groups["url"].Value,
+                OfferKind = offerKind,
                 SellerContact = new SellerContact
                 {
                     Name = sellerContactName,
