@@ -21,7 +21,7 @@ namespace Models.Comparers
 
         public int GetHashCode(OfferDetails obj)
         {
-            return HashCode.Combine(obj.Url, obj.CreationDateTime, (int) obj.OfferKind, obj.SellerContact);
+            return HashCode.Combine(obj.Url, obj.CreationDateTime, (int) obj.OfferKind, SellerContactEqualityComparer.GetHashCode(obj.SellerContact));
         }
     }
 }

@@ -80,8 +80,6 @@ namespace Application.Sample
                                         PropertyFeatures = CreatePropertyFeatures(htmlNode),
                                         RawDescription = CreateDescription(htmlNode)
                                     });
-
-                                    Console.WriteLine($"Added: {url}");
                                 }
                             }
                         }

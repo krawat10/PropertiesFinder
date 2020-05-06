@@ -27,8 +27,13 @@ namespace Models.Comparers
 
         public int GetHashCode(Entry obj)
         {
-            return HashCode.Combine(obj.OfferDetails, obj.PropertyPrice, obj.PropertyDetails, obj.PropertyAddress,
-                obj.PropertyFeatures, obj.RawDescription);
+            return HashCode.Combine(
+                OfferDetailsEqualityComparer.GetHashCode(obj.OfferDetails), 
+                PropertyPriceEqualityComparer.GetHashCode(obj.PropertyPrice), 
+                PropertyDetailsEqualityComparer.GetHashCode(obj.PropertyDetails), 
+                PropertyAddressEqualityComparer.GetHashCode(obj.PropertyAddress),
+                PropertyFeaturesEqualityComparer.GetHashCode(obj.PropertyFeatures), 
+                obj.RawDescription);
         }
     }
 }
