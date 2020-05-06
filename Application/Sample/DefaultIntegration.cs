@@ -80,6 +80,7 @@ namespace Application.Sample
                                         PropertyFeatures = CreatePropertyFeatures(htmlNode),
                                         RawDescription = CreateDescription(htmlNode)
                                     });
+                                    Console.WriteLine($"[Processing]: {url}");
                                 }
                             }
                         }
@@ -88,7 +89,7 @@ namespace Application.Sample
             }
 
 
-            return new Dump {Entries = entries};
+            return new Dump {Entries = entries, WebPage = WebPage, DateTime = DateTime.Now};
         }
 
         private PropertyFeatures CreatePropertyFeatures(HtmlNode htmlNode)
