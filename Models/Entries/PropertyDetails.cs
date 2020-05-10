@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Models.Comparers;
-
-namespace Models
+﻿namespace Models
 {
     public class PropertyDetails
     {
