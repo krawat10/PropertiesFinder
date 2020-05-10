@@ -40,7 +40,7 @@ namespace SampleApp
                     var oldDump = webSiteIngegration.DumpsRepository.GetDump(oldDumpDetails);
 
                     //Znajdź wszystkie oferty w starych dumpach których nie ma w nowym dumpie...
-                    foreach (var closedEntry in oldDump.Entries.Where(_ => _.OfferDetails.IsStillValid)
+                    foreach (var closedEntry in oldDump.Entries.Where(_ => _.OfferDetails.IsStillValid == true)
                         .Except(
                             newDump.Entries,
                             webSiteIngegration.EntriesComparer))

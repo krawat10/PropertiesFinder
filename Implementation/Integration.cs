@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Interfaces;
 using Models;
-using Models.Entries;
 using Utilities.Extensions;
 
-namespace Application.Sample
+namespace Implementation
 {
-    public class DefaultIntegration : IWebSiteIntegration
+    public class Integration : IWebSiteIntegration
     {
         private static readonly Regex UrlRegex = new Regex(@"(?<url>https://[a-zA-Z0-9~_.,/-]+)");
         private static readonly Regex PriceRegex = new Regex(@"Cena: (?<price>[0-9 ]+|inf\. u dewelopera)");
         private static readonly List<string> OfferTypes = new List<string> {"pokoje", "mieszkania", "domy"};
 
-        public DefaultIntegration(IDumpsRepository dumpsRepository,
+        public Integration(IDumpsRepository dumpsRepository,
             IEqualityComparer<Entry> equalityComparer)
         {
             DumpsRepository = dumpsRepository;
@@ -210,7 +208,7 @@ namespace Application.Sample
 
         private OfferDetails CreateOfferDetail(HtmlNode htmlNode)
         {
-            var sellerContactName = htmlNode
+            var sellerName = htmlNode
                 .SelectSingleNode(@"//span[@class='propertyName' or @class='propertyCompanyName']")
                 .InnerText;
 
@@ -224,7 +222,7 @@ namespace Application.Sample
             else offerKind = OfferKind.SALE;
 
 
-            var sellerContact = htmlNode
+            var sellerTelephone = htmlNode
                 .SelectSingleNode("//span[@class='visible-contact']")
                 .InnerText
                 .RemoveWhitespaces();
@@ -255,8 +253,8 @@ namespace Application.Sample
                 OfferKind = offerKind,
                 SellerContact = new SellerContact
                 {
-                    Name = sellerContactName,
-                    Telephone = sellerContact
+                    Name = sellerName,
+                    Telephone = sellerTelephone
                 }
             };
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Models.Entries;
+using Models;
 
 namespace Models.Comparers
 {

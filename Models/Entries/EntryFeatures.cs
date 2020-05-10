@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Models.Comparers;
 
-namespace Models.Entries
+namespace Models
 {
     public class PropertyFeatures
     {

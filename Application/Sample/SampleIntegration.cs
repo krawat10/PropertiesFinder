@@ -49,10 +49,7 @@ namespace Application.Sample
                             Url = $"{WebPage.Url}/{randomValue}",
                             CreationDateTime = DateTime.Now,
                             OfferKind = OfferKind.SALE,
-                            SellerContact = new SellerContact
-                            {
-                                // Email = "okazje@mieszkania.pl"
-                            },
+                            SellerContact = new SellerContact(),
                             IsStillValid = true
                         },
                         RawDescription = "Kup Teraz!",
@@ -64,10 +61,7 @@ namespace Application.Sample
                             Url = $"{WebPage.Url}/{(randomValue+1)%10}",
                             CreationDateTime = DateTime.Now,
                             OfferKind = OfferKind.RENTAL,
-                            SellerContact = new SellerContact
-                            {
-                                // Email = "przeceny@mieszkania.pl"
-                            },
+                            SellerContact = new SellerContact(),
                             IsStillValid = true
                         },
                         RawDescription = "NAPRAWDĘ WARTO!!",

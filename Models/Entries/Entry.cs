@@ -1,4 +1,4 @@
-﻿using Models.Entries;
+﻿using Models;
 
 namespace Models
 {
