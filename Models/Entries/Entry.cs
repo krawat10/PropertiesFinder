@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using System;
+
+namespace Models
 {
     public class Entry
     {
@@ -16,5 +18,7 @@
         /// Nieprzetworzony tekst z ogłoszenia
         /// </summary>
         public string RawDescription { get; set; }
+
+        public Guid Id { get; set; }
     }
 }
